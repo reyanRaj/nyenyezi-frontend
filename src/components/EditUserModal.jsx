@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Label, TextInput, Checkbox } from "flowbite-react";
+import Select from "./Select";
 import axios from "axios";
 import bcryptjs from "bcryptjs";
 import { useAuth } from "../hooks/useAuth";
@@ -10,13 +11,26 @@ export default function EditUserModal(props) {
   };
   const [username, setUsername] = useState(props.user.username);
   const { token } = useAuth();
-
+  const [selectedBranchIndex, setSelectedBranchIndex] = useState(
+    props.branches.findIndex((branch) => {
+      return branch._id === props.user.branch._id;
+    })
+  );
   const [email, setEmail] = useState(props.user.email);
   const [password, setPassword] = useState("");
+
+  let branchesOptions = props.branches.map((branch) => {
+    return { text: branch.name, value: branch._id };
+  });
 
   useEffect(() => {
     setUsername(props.user.username);
     setEmail(props.user.email);
+    setSelectedBranchIndex(
+      props.branches.findIndex((branch) => {
+        return branch._id === props.user.branch._id;
+      })
+    );
   }, [props.user]);
 
   const onUpdateClicked = async () => {
@@ -37,6 +51,10 @@ export default function EditUserModal(props) {
         user.password = bcryptjs.hashSync(password, 8);
       }
 
+      if (selectedBranchIndex) {
+        user.branch = props.branches[selectedBranchIndex]._id;
+      }
+
       //   console.log(data);
 
       let headers = {
@@ -49,6 +67,7 @@ export default function EditUserModal(props) {
       );
 
       props.setAlert(response.data.message);
+      props.setUpdater(Date.now());
     } catch (err) {
       if (err.response.data.message) {
         props.setAlert(err.response.data.message);
@@ -100,6 +119,17 @@ export default function EditUserModal(props) {
                     setEmail(event.target.value);
                   }}
                   type="email"
+                />
+              </div>
+
+              <div>
+                <Select
+                  label="User branch"
+                  options={branchesOptions}
+                  value={selectedBranchIndex}
+                  onChange={(event) => {
+                    setSelectedBranchIndex(event.target.value);
+                  }}
                 />
               </div>
               <div>

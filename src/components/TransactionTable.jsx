@@ -35,6 +35,7 @@ export default function TransactionTable(props) {
         { headers }
       );
       props.setAlert(response.data.message);
+      props.setUpdater(Date.now());
     } catch (err) {
       if (err.response.data.message) {
         props.setAlert(err.response.data.message);
@@ -54,6 +55,20 @@ export default function TransactionTable(props) {
     setShowDeleteModal(false);
   };
 
+  const getUserNameById = (id) => {
+    let user = props.users.filter((user) => {
+      return user._id === id;
+    });
+    return user[0].username;
+  };
+
+  const getBranchNameById = (id) => {
+    let user = props.users.filter((user) => {
+      return user._id === id;
+    });
+    return user[0].branch.name;
+  };
+
   return (
     <div>
       {props.transactions[editableTransaction] && (
@@ -63,6 +78,7 @@ export default function TransactionTable(props) {
           show={showEditModal}
           setShow={setShowEditModal}
           customers={props.customers}
+          setUpdater={props.setUpdater}
           products={props.products}
           transaction={props.transactions[editableTransaction]}
         />
@@ -75,7 +91,7 @@ export default function TransactionTable(props) {
         onNoClicked={onDeleteModalNoClicked}
       />
       <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 overflow-x-auto">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" className="px-6 py-3">
@@ -84,6 +100,16 @@ export default function TransactionTable(props) {
               <th scope="col" className="px-6 py-3">
                 Customer
               </th>
+              {props.maximise && (
+                <th scope="col" className="px-6 py-3">
+                  User
+                </th>
+              )}
+              {props.maximise && (
+                <th scope="col" className="px-6 py-3">
+                  Branch
+                </th>
+              )}
               <th scope="col" className="px-6 py-3">
                 Product
               </th>
@@ -112,10 +138,22 @@ export default function TransactionTable(props) {
                     {new Date(transaction.date).toLocaleDateString("en-US")}
                   </th>
                   <td className="px-6 py-4">{transaction.customer.username}</td>
+                  {props.maximise && (
+                    <td scope="col" className="px-6 py-3">
+                      {getUserNameById(transaction.user)}
+                    </td>
+                  )}
+                  {props.maximise && (
+                    <td scope="col" className="px-6 py-3">
+                      {getBranchNameById(transaction.user)}
+                    </td>
+                  )}
                   <td className="px-6 py-4">{transaction.product.name}</td>
                   <td className="px-6 py-4">{transaction.quantity}</td>
                   <td className="px-6 py-4">
-                    ${transaction.total.$numberDecimal || transaction.total}
+                    N &nbsp;
+                    {parseFloat(transaction.total.$numberDecimal).toFixed(2) ||
+                      parseFloat(transaction.total).toFixed(2)}
                   </td>
 
                   <td className="px-6 py-4 flex">

@@ -1,11 +1,12 @@
 import React from "react";
 import TextInput from "../components/Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../components/Button";
 import Alert from "../components/Alert";
 import Spinner from "../components/Spinner";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
+import Select from "../components/Select";
 
 export default function AddUser() {
   const { token } = useAuth();
@@ -15,6 +16,45 @@ export default function AddUser() {
   const [password, setPassword] = useState("");
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchIndex, setSelectedBranchIndex] = useState(0);
+  const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
+
+  useEffect(() => {
+    try {
+      async function init() {
+        setLoading(true);
+        let headers = {
+          "x-access-token": token,
+        };
+
+        let response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/getAllBranches`,
+          { headers }
+        );
+
+        setBranches(response.data.branches);
+      }
+
+      init();
+    } catch (err) {
+      if (err.response.data.message) {
+        setAlert(err.response.data.message);
+        return;
+      }
+
+      setAlert("Something went wrong");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  let branchesOptions = branches.map((branch) => {
+    return { text: branch.name, value: branch._id };
+  });
+
+  let roleOptions = [{ text: "User" }, { text: "Admin" }];
 
   const onSubmitHandler = () => {
     if (!firstName || !lastName || !password) {
@@ -31,8 +71,10 @@ export default function AddUser() {
       username: firstName + " " + lastName,
       email,
       password,
+      branch: branches[selectedBranchIndex],
+      role: selectedRoleIndex == 0 ? "user" : "admin",
     };
-
+    console.log(data);
     let headers = {
       "x-access-token": token,
     };
@@ -65,17 +107,17 @@ export default function AddUser() {
 
   return (
     <div>
-      <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
+      <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
         Add User
       </h1>
-      <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
+      <p className="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
         Register a new user with Nyenyezi,
       </p>
-      <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
+      <p className="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
         Just enter the email and password of user.
       </p>
 
-      <div class="grid gap-6 mb-6 md:grid-cols-2">
+      <div className="grid gap-6 mb-6 md:grid-cols-2">
         <TextInput
           label="First Name"
           placeholder="John"
@@ -103,6 +145,25 @@ export default function AddUser() {
           }}
           value={email}
         />
+
+        <Select
+          label="Select Branch"
+          options={branchesOptions}
+          value={selectedBranchIndex}
+          onChange={(event) => {
+            setSelectedBranchIndex(event.target.value);
+          }}
+        />
+
+        <Select
+          label="Select Role"
+          options={roleOptions}
+          value={selectedRoleIndex}
+          onChange={(event) => {
+            setSelectedRoleIndex(event.target.value);
+          }}
+        />
+
         <TextInput
           label="Password"
           placeholder="..........."

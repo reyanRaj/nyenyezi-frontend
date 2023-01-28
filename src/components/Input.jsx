@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Input(props) {
   return (
-    <div className="my-4">
+    <div className="my-4" style={props.style}>
       <div>
         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
           {props.label}

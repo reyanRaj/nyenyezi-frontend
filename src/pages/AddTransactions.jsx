@@ -6,9 +6,14 @@ import { useAuth } from "../hooks/useAuth";
 import Spinner from "../components/Spinner";
 import Alert from "../components/Alert";
 import Button from "../components/Button";
+import { Label, TextInput } from "flowbite-react";
+import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 export default function AddTransactions() {
   let { token } = useAuth();
+  let total = 0;
+  let navigate = useNavigate();
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
@@ -16,6 +21,7 @@ export default function AddTransactions() {
   const [transactionCards, setTransactionCards] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [updater, setUpdater] = useState(Date.now());
+  const [date, setDate] = useState(moment(new Date()).format("YYYY-MM-DD"));
 
   const handleAddTranctionCard = (e) => {
     e.preventDefault();
@@ -47,11 +53,15 @@ export default function AddTransactions() {
       };
       let response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/addTransactions`,
-        { transactions },
+        { transactions, date },
         { headers }
       );
 
       setAlert(response.data.message);
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (err) {
       if (err.response.data.message) {
         setAlert(err.response.data.message);
@@ -126,6 +136,10 @@ export default function AddTransactions() {
 
     setUpdater(Date.now());
   };
+
+  transactions.map((transaction) => {
+    total = transaction.total + total;
+  });
   return (
     <div>
       <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
@@ -139,23 +153,34 @@ export default function AddTransactions() {
       </p>
       {loading && <Spinner />}
       {alert && <Alert text={alert} />}
+      <Label htmlFor="date" value="Select date" />
+      <TextInput
+        type={"date"}
+        value={date}
+        id="date"
+        onChange={(event) => {
+          setDate(event.target.value);
+        }}
+        className="mb-6"
+      />
+
       {products.length && (
         <>
           <div className="relative overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Date
-                  </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="md:px-6 md:py-3">
                     Customer
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="md:px-6 md:py-3">
                     Product
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="md:px-6 md:py-3">
                     Quantity
+                  </th>
+                  <th scope="col" className="md:px-6 md:py-3">
+                    Total
                   </th>
                 </tr>
               </thead>
@@ -172,6 +197,10 @@ export default function AddTransactions() {
               color: "#1a56db",
             }}
           />
+
+          <p className="mb-3 font-['Poppins']  font-bold text-gray-900 dark:text-gray-400">
+            Grand Total: N {total.toFixed(2)}
+          </p>
           {transactionCards.length > 1 && (
             <Button
               color="red"
@@ -180,36 +209,6 @@ export default function AddTransactions() {
             />
           )}
           <Button color="blue" text="Submit" onClick={handleSumbit} />
-          {transactions.map((transaction, index) => {
-            return (
-              <>
-                <p class="mb-3 font-['Poppins']  font-bold text-gray-900 dark:text-gray-400">
-                  Price:{"$"}
-                  {
-                    products.filter((product) => {
-                      return product._id === transaction.product;
-                    })[0].price.$numberDecimal
-                  }{" "}
-                  * {transaction.quantity}
-                </p>
-                <p class="mb-3 font-['Poppins']  font-bold text-gray-900 dark:text-gray-400">
-                  VAT: 16%
-                </p>
-                <p class="mb-3 font-['Poppins']  font-bold text-gray-900 dark:text-gray-400">
-                  Total: $
-                  {(
-                    (products.filter((product) => {
-                      return product._id === transaction.product;
-                    })[0].price.$numberDecimal *
-                      transaction.quantity *
-                      116) /
-                    100
-                  ).toFixed(2)}
-                </p>
-                <hr />
-              </>
-            );
-          })}
         </>
       )}
     </div>

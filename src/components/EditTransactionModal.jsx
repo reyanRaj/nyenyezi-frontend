@@ -63,6 +63,7 @@ export default function EditProductModal(props) {
       );
 
       props.setAlert(response.data.message);
+      props.setUpdater(Date.now());
     } catch (err) {
       if (err.response.data.message) {
         props.setAlert(err.response.data.message);

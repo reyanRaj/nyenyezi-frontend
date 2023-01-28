@@ -81,13 +81,7 @@ export default function AddTransactionCard(props) {
       </p> */}
 
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <th
-          scope="row"
-          class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-        >
-          <DatePicker readOnly={true} />
-        </th>
-        <td class="px-6 py-4">
+        <td class="md:px-6 py-4">
           <Select
             options={customerSelectOptions}
             value={selectedCustomer}
@@ -96,7 +90,7 @@ export default function AddTransactionCard(props) {
             }}
           />
         </td>
-        <td class="px-6 py-4">
+        <td class="md:px-6 py-4">
           <Select
             options={productSelectOptions}
             value={selectedProduct}
@@ -105,7 +99,7 @@ export default function AddTransactionCard(props) {
             }}
           />
         </td>
-        <td class="px-6 py-4">
+        <td class="md:px-6 py-4">
           <Input
             placeholder="4"
             type="number"
@@ -114,6 +108,15 @@ export default function AddTransactionCard(props) {
               setQuantity(event.target.value);
             }}
           />
+        </td>
+        <td className="md:px-6 py-">
+          <p className="mb-3 font-['Poppins']  font-bold text-gray-900 dark:text-gray-400">
+            N {props.products[selectedProduct].price.$numberDecimal} *{" "}
+            {quantity} ={" "}
+            {(
+              props.products[selectedProduct].price.$numberDecimal * quantity
+            ).toFixed(2)}
+          </p>
         </td>
       </tr>
     </>

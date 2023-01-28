@@ -60,15 +60,16 @@ export const AuthProvider = ({ children }) => {
         }
       );
       if (response2) {
-        if (response.status == 401) {
+        if (response2.status == 401) {
           setToken(null);
           navigate("/login");
         }
-        setUser(response.data);
+        setUser(response2.data);
       }
 
       axios.defaults.headers.common["x-access-token"] =
         response.data.accessToken;
+
       navigate("/");
     } catch (error) {
       console.log(error.response.data.message);
@@ -81,7 +82,8 @@ export const AuthProvider = ({ children }) => {
 
   // call this function to sign out logged in user
   const logout = () => {
-    setToken(null);
+    window.localStorage.removeItem("token");
+    setUser(null);
     navigate("/login", { replace: true });
   };
 

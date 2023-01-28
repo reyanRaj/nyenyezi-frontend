@@ -1,40 +1,34 @@
 import React from "react";
-import TextInput from "../components/Input";
-import { useState } from "react";
-import Button from "../components/Button";
 import Alert from "../components/Alert";
 import Spinner from "../components/Spinner";
-import axios from "axios";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import Textarea from "../components/Textarea";
+import axios from "axios";
+import TextInput from "../components/Input";
+import Button from "../components/Button";
 
-export default function AddProduct() {
+export default function AddBranch() {
+  const [branchName, setBranchName] = useState("");
   const { token } = useAuth();
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmitHandler = () => {
-    if (!name || !price) {
-      setAlert("Enter all information");
+    if (!branchName) {
+      setAlert("Enter the branch Name");
       return;
     }
 
     setLoading(true);
     let data = {
-      name,
-      description,
-      price,
+      branchName,
     };
 
     let headers = {
       "x-access-token": token,
     };
-
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/addProduct`, data, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/addBranch`, data, {
         headers,
       })
       .then((response) => {
@@ -62,42 +56,23 @@ export default function AddProduct() {
   return (
     <div>
       <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
-        Add Product
+        Add Branch
       </h1>
       <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
-        Add a new product to Nyenyezi,
+        Embed a new branch with Nyenyezi,
       </p>
       <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
-        Just enter an unique name, a price and an optional short description
-        about your product
+        Just enter the name of the branch
       </p>
-
       <div class="grid gap-6 mb-6 md:grid-cols-2">
         <TextInput
-          label="Name"
-          placeholder="Iphone 11"
+          label="Branch Name"
+          placeholder="Zambezi"
           type="text"
           onChange={(event) => {
-            setName(event.target.value);
+            setBranchName(event.target.value);
           }}
-          value={name}
-        />
-        <TextInput
-          label="Price (in N)"
-          placeholder="1999.99"
-          type="number"
-          onChange={(event) => {
-            setPrice(event.target.value);
-          }}
-          value={price}
-        />
-        <Textarea
-          label="Description"
-          placeholder="One of the most reputated phone in the world ....."
-          value={description}
-          onChange={(event) => {
-            setDescription(event.target.value);
-          }}
+          value={branchName}
         />
       </div>
       <Button text="Submit" color="blue" onClick={onSubmitHandler} />

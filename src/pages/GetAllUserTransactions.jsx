@@ -11,11 +11,12 @@ import { saveAs } from "file-saver";
 import { TextInput } from "flowbite-react";
 import moment from "moment";
 
-export default function Transactions() {
+export default function GetAllUserTransactions() {
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
   const [transactions, setTransactions] = useState([]);
+  const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export default function Transactions() {
         let response = await axios.get(
           `${
             import.meta.env.VITE_BACKEND_URL
-          }/api/user/getTransactions?date=${date}`,
+          }/api/admin/getAllUserTransactions?date=${date}`,
           { headers }
         );
         setTransactions(response.data.transactions);
@@ -49,6 +50,13 @@ export default function Transactions() {
         );
 
         setProducts(response_2.data.products);
+
+        let response_3 = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/getAllUsers`,
+          { headers }
+        );
+
+        setUsers(response_3.data.users);
       }
       setLoading(true);
       init();
@@ -76,7 +84,7 @@ export default function Transactions() {
         "x-access-token": token,
       };
       let response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/mailCSV?date=${date}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/mailCSVAll?date=${date}`,
         { email: email, date },
         { headers }
       );
@@ -104,7 +112,7 @@ export default function Transactions() {
       let response = await axios.get(
         `${
           import.meta.env.VITE_BACKEND_URL
-        }/api/user/generateCSV/?date=${date}`,
+        }/api/admin/generateCSVAll/?date=${date}`,
         { headers }
       );
       saveAs(
@@ -127,10 +135,10 @@ export default function Transactions() {
   return (
     <div>
       <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
-        Transactions
+        All Transactions
       </h1>
       <p className="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400 font-['Poppins']">
-        Here are all the transactions assosciated with Nyenyezi
+        Here are all the transactions assosciated by users including you
       </p>
       <div className="flex mb-6 items-center flex-wrap">
         <Button color="blue" text="Download CSV" onClick={downloadCSVClicked} />
@@ -154,14 +162,18 @@ export default function Transactions() {
       </div>
       {loading && <Spinner />}
       {alert && <Alert text={alert} />}
-      <TransactionTable
-        transactions={transactions}
-        setAlert={setAlert}
-        setLoading={setLoading}
-        products={products}
-        customers={customers}
-        setUpdater={setUpdater}
-      />
+      {users.length && (
+        <TransactionTable
+          transactions={transactions}
+          setAlert={setAlert}
+          setLoading={setLoading}
+          products={products}
+          customers={customers}
+          maximise={true}
+          users={users}
+          setUpdater={setUpdater}
+        />
+      )}
     </div>
   );
 }

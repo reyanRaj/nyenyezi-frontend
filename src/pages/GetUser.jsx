@@ -18,6 +18,8 @@ export default function GetUser() {
   const [deletableUser, setDeletableUser] = useState(0);
   const [editableUser, setEditableUser] = useState(0);
   const [editUserModal, setEditUserModal] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [updater, setUpdater] = useState(Date.now());
 
   useEffect(() => {
     try {
@@ -31,6 +33,13 @@ export default function GetUser() {
         );
 
         setUsers(response.data.users);
+
+        let response_2 = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/getAllBranches`,
+          { headers }
+        );
+
+        setBranches(response_2.data.branches);
       }
       setLoading(true);
       init();
@@ -45,7 +54,7 @@ export default function GetUser() {
     } finally {
       setLoading(false);
     }
-  }, [alert]);
+  }, [alert, updater]);
   const onEditClicked = (index) => {
     setEditUserModal(true);
     setEditableUser(index);
@@ -93,7 +102,9 @@ export default function GetUser() {
           user={users[editableUser]}
           setUsers={setUsers}
           setLoading={setLoading}
+          branches={branches}
           setAlert={setAlert}
+          setUpdater={setUpdater}
         />
       )}
       <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white font-['Baloo 2'] ">
@@ -117,6 +128,8 @@ export default function GetUser() {
             <UserCard
               username={user.username}
               email={user.email}
+              branch={user.branch.name}
+              role={user.roles[0].name}
               key={index}
               onEditClicked={() => {
                 onEditClicked(index);
